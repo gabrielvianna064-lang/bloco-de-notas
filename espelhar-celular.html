@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Espelho de Tela</title>
+
+<style>
+body{
+    background:#111;
+    color:white;
+    text-align:center;
+    font-family:Arial;
+}
+
+video{
+    width:90%;
+    max-width:600px;
+    border-radius:15px;
+    border:3px solid #00aaff;
+}
+
+button{
+    padding:15px;
+    background:#008cff;
+    color:white;
+    border:0;
+    border-radius:10px;
+    font-size:18px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Espelhamento da Tela</h1>
+
+<button id="btn">
+Compartilhar Tela
+</button>
+
+<br><br>
+
+<video id="tela" autoplay muted></video>
+
+<script type="module">
+
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  push,
+  onValue
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  databaseURL:
+  "https://pemissao--concedido-ou-negado-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const pc = new RTCPeerConnection({
+  iceServers: [
+    {
+      urls: "stun:stun.l.google.com:19302"
+    }
+  ]
+});
+
+const video = document.getElementById("tela");
+
+document.getElementById("btn").onclick = async () => {
+
+  try {
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      alert("Este navegador não suporta compartilhamento de tela.");
+      return;
+    }
+
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: true
+    });
+
+    video.srcObject = stream;
+
+    stream.getTracks().forEach(track => {
+      pc.addTrack(track, stream);
+    });
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        push(
+          ref(db, "espelho/candidatos"),
+          e.candidate.toJSON()
+        );
+      }
+    };
+
+    const oferta = await pc.createOffer();
+
+    await pc.setLocalDescription(oferta);
+
+    await set(
+      ref(db, "espelho/oferta"),
+      {
+        type: oferta.type,
+        sdp: oferta.sdp
+      }
+    );
+
+  } catch (e) {
+
+    console.error(e);
+
+    alert(
+      "Erro: " + e.name +
+      "\n\n" +
+      e.message
+    );
+
+  }
+
+};
+
+// recebe resposta do visualizador
+onValue(
+  ref(db, "espelho/resposta"),
+  async (snap) => {
+
+    if (snap.exists()) {
+
+      try {
+
+        await pc.setRemoteDescription(
+          snap.val()
+        );
+
+      } catch (e) {
+
+        console.log(e);
+
+      }
+
+    }
+
+  }
+);
+
+// recebe candidatos enviados pelo PC
+onValue(
+  ref(db, "espelho/candidatos_pc"),
+  (snapshot) => {
+
+    snapshot.forEach(async (item) => {
+
+      try {
+
+        await pc.addIceCandidate(
+          item.val()
+        );
+
+      } catch (e) {
+
+        console.log(e);
+
+      }
+
+    });
+
+  }
+);
+
+</script>
