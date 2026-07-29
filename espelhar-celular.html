@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Espelho de Tela</title>
+<title>Espelho de Tela 2</title>
 
 <style>
 body{
@@ -18,12 +18,12 @@ video{
     width:90%;
     max-width:600px;
     border-radius:15px;
-    border:3px solid #00aaff;
+    border:3px solid #00ff88;
 }
 
 button{
     padding:15px 25px;
-    background:#008cff;
+    background:#00aa55;
     color:#fff;
     border:none;
     border-radius:10px;
@@ -32,20 +32,24 @@ button{
 }
 
 button:hover{
-    background:#006fd6;
+    background:#008844;
 }
 </style>
 
 </head>
+
 <body>
 
-<h1>Espelhamento da Tela</h1>
+<h1>Espelhamento da Tela 2</h1>
 
-<button id="btn">Compartilhar Tela</button>
+<button id="btn">
+Compartilhar Tela
+</button>
 
 <br><br>
 
 <video id="tela" autoplay playsinline muted></video>
+
 
 <script type="module">
 
@@ -59,123 +63,241 @@ import {
     onValue
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+
 const firebaseConfig = {
-    databaseURL: "https://pemissao--concedido-ou-negado-default-rtdb.europe-west1.firebasedatabase.app"
+
+databaseURL:
+"https://pemissao--concedido-ou-negado-default-rtdb.europe-west1.firebasedatabase.app"
+
 };
 
+
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
+
 
 const video = document.getElementById("tela");
 
+
 const pc = new RTCPeerConnection({
-    iceServers: [
-        {
-            urls: "stun:stun.l.google.com:19302"
-        }
-    ]
+
+iceServers:[
+{
+urls:"stun:stun.l.google.com:19302"
+}
+]
+
 });
 
-document.getElementById("btn").onclick = async () => {
 
-    try {
 
-        if (!navigator.mediaDevices ||
-            !navigator.mediaDevices.getDisplayMedia) {
+// Recebe a resposta do visualizador
 
-            alert("Este navegador não suporta compartilhamento de tela.");
-            return;
-        }
+onValue(
 
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-            video: true,
-            audio: true
-        });
+ref(db,"espelho2/resposta"),
 
-        video.srcObject = stream;
+async snapshot=>{
 
-        stream.getTracks().forEach(track => {
-            pc.addTrack(track, stream);
-        });
 
-        pc.onicecandidate = (event) => {
+if(snapshot.exists()){
 
-            if (event.candidate) {
 
-                push(
-                    ref(db, "espelho/candidatos"),
-                    event.candidate.toJSON()
-                );
+console.log("Resposta recebida");
 
-            }
 
-        };
+try{
 
-        const oferta = await pc.createOffer();
+await pc.setRemoteDescription(
+snapshot.val()
+);
 
-        await pc.setLocalDescription(oferta);
 
-        await set(
-            ref(db, "espelho/oferta"),
-            {
-                type: oferta.type,
-                sdp: oferta.sdp
-            }
-        );
+console.log("Conectado!");
 
-        alert("Tela compartilhada!");
+}
+catch(e){
 
-    } catch (e) {
+console.log("Erro resposta:",e);
 
-        alert("Erro: " + e.message);
+}
 
-    }
+
+}
+
+
+});
+
+
+
+
+// Envia candidatos
+
+pc.onicecandidate = (event)=>{
+
+
+if(event.candidate){
+
+
+push(
+
+ref(db,"espelho2/candidatos"),
+
+event.candidate.toJSON()
+
+);
+
+
+console.log("Candidato enviado");
+
+
+}
+
 
 };
 
-// Recebe resposta
 
-onValue(
-    ref(db, "espelho/resposta"),
-    async (snapshot) => {
 
-        if (snapshot.exists()) {
 
-            try {
-                await pc.setRemoteDescription(snapshot.val());
-            } catch (e) {
-                console.log(e);
-            }
 
-        }
+document.getElementById("btn").onclick = async()=>{
 
-    }
+
+try{
+
+
+console.log("Abrindo compartilhamento...");
+
+
+
+const stream =
+
+await navigator.mediaDevices.getDisplayMedia({
+
+video:true,
+
+audio:true
+
+});
+
+
+
+video.srcObject = stream;
+
+
+
+stream.getTracks().forEach(track=>{
+
+
+pc.addTrack(track,stream);
+
+
+});
+
+
+
+console.log("Tela adicionada");
+
+
+
+
+
+const oferta = await pc.createOffer();
+
+
+
+await pc.setLocalDescription(oferta);
+
+
+
+
+
+// CORREÇÃO AQUI
+
+await set(
+
+ref(db,"espelho2/oferta"),
+
+{
+
+type: pc.localDescription.type,
+
+sdp: pc.localDescription.sdp
+
+}
+
 );
 
-// Recebe candidatos
+
+
+console.log("OFERTA ENVIADA PARA FIREBASE");
+
+
+
+alert("Tela compartilhada com sucesso!");
+
+
+
+}
+
+catch(e){
+
+
+console.log(e);
+
+alert("Erro: "+e.message);
+
+
+}
+
+
+};
+
+
+
+
+
+// Recebe candidatos do visualizador
+
 
 onValue(
-    ref(db, "espelho/candidatos_pc"),
-    (snapshot) => {
 
-        snapshot.forEach(async (item) => {
+ref(db,"espelho2/candidatos_pc"),
 
-            try {
+snapshot=>{
 
-                await pc.addIceCandidate(item.val());
 
-            } catch (e) {
+snapshot.forEach(async item=>{
 
-                console.log(e);
 
-            }
+try{
 
-        });
 
-    }
+await pc.addIceCandidate(
+
+item.val()
+
 );
+
+
+console.log("Candidato recebido");
+
+
+}
+
+catch(e){
+
+console.log(e);
+
+}
+
+
+});
+
+
+});
+
+
 
 </script>
-
-</body>
-</html>
