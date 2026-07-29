@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Espelho de Tela</title>
+
+<style>
+body{
+    background:#111;
+    color:#fff;
+    text-align:center;
+    font-family:Arial, sans-serif;
+}
+
+video{
+    width:90%;
+    max-width:600px;
+    border-radius:15px;
+    border:3px solid #00aaff;
+}
+
+button{
+    padding:15px 25px;
+    background:#008cff;
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#006fd6;
+}
+</style>
+
+</head>
+<body>
+
+<h1>Espelhamento da Tela</h1>
+
+<button id="btn">Compartilhar Tela</button>
+
+<br><br>
+
+<video id="tela" autoplay playsinline muted></video>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getDatabase,
+    ref,
+    set,
+    push,
+    onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+    databaseURL: "https://pemissao--concedido-ou-negado-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const video = document.getElementById("tela");
+
+const pc = new RTCPeerConnection({
+    iceServers: [
+        {
+            urls: "stun:stun.l.google.com:19302"
+        }
+    ]
+});
+
+document.getElementById("btn").onclick = async () => {
+
+    try {
+
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getDisplayMedia) {
+
+            alert("Este navegador não suporta compartilhamento de tela.");
+            return;
+        }
+
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: true
+        });
+
+        video.srcObject = stream;
+
+        stream.getTracks().forEach(track => {
+            pc.addTrack(track, stream);
+        });
+
+        pc.onicecandidate = (event) => {
+
+            if (event.candidate) {
+
+                push(
+                    ref(db, "espelho/candidatos"),
+                    event.candidate.toJSON()
+                );
+
+            }
+
+        };
+
+        const oferta = await pc.createOffer();
+
+        await pc.setLocalDescription(oferta);
+
+        await set(
+            ref(db, "espelho/oferta"),
+            {
+                type: oferta.type,
+                sdp: oferta.sdp
+            }
+        );
+
+        alert("Tela compartilhada!");
+
+    } catch (e) {
+
+        alert("Erro: " + e.message);
+
+    }
+
+};
+
+// Recebe resposta
+
+onValue(
+    ref(db, "espelho/resposta"),
+    async (snapshot) => {
+
+        if (snapshot.exists()) {
+
+            try {
+                await pc.setRemoteDescription(snapshot.val());
+            } catch (e) {
+                console.log(e);
+            }
+
+        }
+
+    }
+);
+
+// Recebe candidatos
+
+onValue(
+    ref(db, "espelho/candidatos_pc"),
+    (snapshot) => {
+
+        snapshot.forEach(async (item) => {
+
+            try {
+
+                await pc.addIceCandidate(item.val());
+
+            } catch (e) {
+
+                console.log(e);
+
+            }
+
+        });
+
+    }
+);
+
+</script>
+
+</body>
+</html>
