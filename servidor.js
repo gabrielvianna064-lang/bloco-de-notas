@@ -12,7 +12,13 @@ app.use(express.static(__dirname));
 
 // Página inicial
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "espelhar-celular.html"));
+    const arquivo = path.join(__dirname, "espelhar-celular.html");
+
+    res.sendFile(arquivo, (erro) => {
+        if (erro) {
+            res.status(404).send("Arquivo espelhar-celular.html não encontrado.");
+        }
+    });
 });
 
 // Se a rota não existir
