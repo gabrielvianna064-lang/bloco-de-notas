@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 
@@ -20,9 +21,11 @@ app.get("/", (req, res) => {
     res.sendFile(arquivo, (erro) => {
 
         if (erro) {
+
             res.status(404).send(
                 "Arquivo espelhar-celular.html não encontrado."
             );
+
         }
 
     });
@@ -30,25 +33,36 @@ app.get("/", (req, res) => {
 });
 
 
-// Download do arquivo
-app.get("/download/arquivo.zip", (req, res) => {
+// Download de arquivo
+// Exemplo:
+// /download/arquivo.zip
 
-    const arquivo = path.join(__dirname, "arquivo.zip");
+app.get("/download/:nome", (req, res) => {
 
-    res.download(arquivo, "arquivo.zip", (erro) => {
+    const nomeArquivo = req.params.nome;
 
-        if (erro) {
-            res.status(404).send(
-                "Arquivo para download não encontrado."
-            );
-        }
+    const arquivo = path.join(__dirname, nomeArquivo);
 
-    });
+
+    console.log("Tentando baixar:", arquivo);
+
+
+    if (!fs.existsSync(arquivo)) {
+
+        return res.status(404).send(
+            "Arquivo não encontrado no servidor."
+        );
+
+    }
+
+
+    res.download(arquivo);
 
 });
 
 
 // Erro 404
+
 app.use((req, res) => {
 
     res.status(404).send(
@@ -58,8 +72,10 @@ app.use((req, res) => {
 });
 
 
-// Porta
+// Porta Render ou localhost
+
 const PORT = process.env.PORT || 3000;
+
 
 app.listen(PORT, () => {
 
