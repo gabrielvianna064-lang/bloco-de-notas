@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Avaliar Produto</title>
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+background:#f1f5f9;
+margin:0;
+}
+
+header{
+background:#111827;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:600px;
+margin:30px auto;
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 5px 20px #0003;
+}
+
+h2{
+margin-top:0;
+}
+
+#nomeProduto{
+font-size:26px;
+font-weight:bold;
+margin-bottom:20px;
+}
+
+.estrelas{
+display:flex;
+justify-content:center;
+gap:10px;
+font-size:40px;
+margin:20px 0;
+}
+
+.estrela{
+cursor:pointer;
+color:#cbd5e1;
+transition:.2s;
+}
+
+.estrela.ativa{
+color:#f59e0b;
+}
+
+textarea{
+width:100%;
+height:140px;
+padding:15px;
+font-size:16px;
+border-radius:10px;
+border:1px solid #cbd5e1;
+resize:none;
+}
+
+button{
+width:100%;
+padding:15px;
+margin-top:15px;
+border:none;
+border-radius:12px;
+font-size:18px;
+cursor:pointer;
+}
+
+.enviar{
+background:#16a34a;
+color:white;
+}
+
+.voltar{
+background:#111827;
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h2>⭐ Avaliar Produto</h2>
+
+</header>
+
+<div class="container">
+
+<div id="nomeProduto">
+Carregando...
+</div>
+
+<div class="estrelas">
+
+<span class="estrela" data="1">★</span>
+<span class="estrela" data="2">★</span>
+<span class="estrela" data="3">★</span>
+<span class="estrela" data="4">★</span>
+<span class="estrela" data="5">★</span>
+
+</div>
+
+<textarea id="comentario" placeholder="Escreva sua avaliação..."></textarea>
+
+<button class="enviar" onclick="enviar()">
+Enviar Avaliação
+</button>
+
+<button class="voltar" onclick="history.back()">
+Voltar
+</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+push,
+set,
+onValue
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig={
+
+databaseURL:"https://minha-loja-5477a-default-rtdb.europe-west1.firebasedatabase.app/"
+
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+
+const params=new URLSearchParams(window.location.search);
+
+const id=params.get("id");
+
+let nota=5;
+
+// Carregar nome do produto
+
+onValue(ref(db,"produtos/"+id),(snapshot)=>{
+
+const produto=snapshot.val();
+
+if(produto){
+
+document.getElementById("nomeProduto").innerHTML=produto.nome;
+
+}
+
+});
+
+// Seleção das estrelas
+
+const estrelas=document.querySelectorAll(".estrela");
+
+estrelas.forEach(estrela=>{
+
+estrela.onclick=()=>{
+
+nota=Number(estrela.getAttribute("data"));
+
+estrelas.forEach(e=>{
+
+e.classList.remove("ativa");
+
+});
+
+for(let i=0;i<nota;i++){
+
+estrelas[i].classList.add("ativa");
+
+}
+
+};
+
+});
+
+// Começa com 5 estrelas
+
+estrelas.forEach(e=>e.classList.add("ativa"));
+
+window.enviar=function(){
+
+const comentario=document.getElementById("comentario").value.trim();
+
+const nova=push(ref(db,"avaliacoes/"+id));
+
+set(nova,{
+
+nota:nota,
+comentario:comentario,
+data:Date.now()
+
+})
+
+.then(()=>{
+
+alert("✅ Avaliação enviada!");
+
+window.location.href="produto.html?id="+id;
+
+})
+
+.catch((erro)=>{
+
+alert("Erro ao enviar: "+erro);
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
