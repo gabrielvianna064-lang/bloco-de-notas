@@ -20,11 +20,9 @@ app.get("/", (req, res) => {
     res.sendFile(arquivo, (erro) => {
 
         if (erro) {
-
             res.status(404).send(
                 "Arquivo espelhar-celular.html não encontrado."
             );
-
         }
 
     });
@@ -33,25 +31,16 @@ app.get("/", (req, res) => {
 
 
 // Download do arquivo
-// coloque o arquivo na mesma pasta do servidor
-// exemplo: arquivo.zip
-
 app.get("/download/arquivo.zip", (req, res) => {
 
     const arquivo = path.join(__dirname, "arquivo.zip");
 
-    console.log("Solicitado download:", arquivo);
-
     res.download(arquivo, "arquivo.zip", (erro) => {
 
         if (erro) {
-
-            console.log("Erro no download:", erro);
-
             res.status(404).send(
                 "Arquivo para download não encontrado."
             );
-
         }
 
     });
@@ -59,8 +48,7 @@ app.get("/download/arquivo.zip", (req, res) => {
 });
 
 
-// Se a rota não existir
-
+// Erro 404
 app.use((req, res) => {
 
     res.status(404).send(
@@ -70,10 +58,8 @@ app.use((req, res) => {
 });
 
 
-// Porta do Render ou localhost
-
+// Porta
 const PORT = process.env.PORT || 3000;
-
 
 app.listen(PORT, () => {
 
