@@ -40,9 +40,13 @@ app.get("/download/arquivo.zip", (req, res) => {
 
     const arquivo = path.join(__dirname, "arquivo.zip");
 
+    console.log("Solicitado download:", arquivo);
+
     res.download(arquivo, "arquivo.zip", (erro) => {
 
         if (erro) {
+
+            console.log("Erro no download:", erro);
 
             res.status(404).send(
                 "Arquivo para download não encontrado."
