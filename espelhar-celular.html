@@ -7,6 +7,7 @@
 <title>Espelho de Tela 2</title>
 
 <style>
+
 body{
     background:#111;
     color:#fff;
@@ -36,14 +37,6 @@ button:hover{
     background:#008844;
 }
 
-.download{
-    background:#0066ff;
-}
-
-.download:hover{
-    background:#0044aa;
-}
-
 </style>
 
 </head>
@@ -52,57 +45,19 @@ button:hover{
 
 <h1>Espelhamento da Tela 2</h1>
 
-
 <button id="btn">
 Compartilhar Tela
 </button>
 
-
-<button class="download" onclick="baixarArquivo()">
-Baixar Arquivo
-</button>
-
-
 <br><br>
-
 
 <video id="tela" autoplay playsinline muted></video>
 
 
-
-<script>
-
-
-// Download do arquivo
-
-function baixarArquivo(){
-
-    const link = document.createElement("a");
-
-    link.href = "arquivo.zip";
-
-    link.download = "arquivo.zip";
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    document.body.removeChild(link);
-
-}
-
-
-
-</script>
-
-
-
 <script type="module">
-
 
 import { initializeApp } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 
 import {
 getDatabase,
@@ -114,7 +69,6 @@ onValue
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
-
 const firebaseConfig = {
 
 databaseURL:
@@ -123,17 +77,14 @@ databaseURL:
 };
 
 
-
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
 
 
-
 const video = document.getElementById("tela");
 
 const botao = document.getElementById("btn");
-
 
 
 const pc = new RTCPeerConnection({
@@ -149,7 +100,6 @@ urls:"stun:stun.l.google.com:19302"
 });
 
 
-
 // Estado da conexão
 
 pc.onconnectionstatechange = ()=>{
@@ -162,36 +112,27 @@ pc.connectionState
 };
 
 
-
 // Recebe resposta
 
 onValue(
 ref(db,"espelho2/resposta"),
 async(snapshot)=>{
 
-
 if(!snapshot.exists()) return;
-
 
 try{
 
-
 if(!pc.currentRemoteDescription){
-
 
 await pc.setRemoteDescription(
 snapshot.val()
 );
 
-
 console.log(
 "Resposta conectada"
 );
 
-
 }
-
-
 
 }catch(e){
 
@@ -200,22 +141,16 @@ console.log(
 e
 );
 
-
 }
 
-
 });
-
-
 
 
 // Envia candidatos
 
 pc.onicecandidate=(event)=>{
 
-
 if(!event.candidate)return;
-
 
 push(
 
@@ -225,25 +160,18 @@ event.candidate.toJSON()
 
 );
 
-
 console.log(
 "Candidato enviado"
 );
 
-
 };
-
-
-
 
 
 // Compartilhar tela
 
 botao.onclick=async()=>{
 
-
 try{
-
 
 const stream =
 await navigator.mediaDevices.getDisplayMedia({
@@ -255,9 +183,7 @@ audio:true
 });
 
 
-
 video.srcObject=stream;
-
 
 
 stream.getTracks().forEach(track=>{
@@ -267,14 +193,11 @@ pc.addTrack(track,stream);
 });
 
 
-
 const oferta =
 await pc.createOffer();
 
 
-
 await pc.setLocalDescription(oferta);
-
 
 
 await set(
@@ -292,27 +215,20 @@ sdp:pc.localDescription.sdp
 );
 
 
-
 alert(
 "Tela compartilhada!"
 );
 
 
-
 }catch(e){
-
 
 alert(
 "Erro: "+e.message
 );
 
-
 }
 
-
 };
-
-
 
 
 // Receber candidatos
@@ -323,45 +239,32 @@ ref(db,"espelho2/candidatos_pc"),
 
 (snapshot)=>{
 
-
 snapshot.forEach(async(item)=>{
 
-
 try{
-
 
 await pc.addIceCandidate(
 item.val()
 );
 
-
 console.log(
 "Candidato recebido"
 );
 
-
 }catch(e){
-
 
 console.log(
 "Erro ICE:",
 e
 );
 
-
 }
 
-
-
 });
 
-
 });
-
-
 
 </script>
-
 
 </body>
 </html>
