@@ -1,270 +1,758 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Espelho de Tela 2</title>
+    <title>Espelho de Tela 2</title>
 
-<style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-body{
-    background:#111;
-    color:#fff;
-    text-align:center;
-    font-family:Arial, sans-serif;
-}
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 15px;
 
-video{
-    width:90%;
-    max-width:600px;
-    border-radius:15px;
-    border:3px solid #00ff88;
-}
+            font-family: Arial, Helvetica, sans-serif;
+            color: #ffffff;
 
-button{
-    padding:15px 25px;
-    background:#00aa55;
-    color:#fff;
-    border:none;
-    border-radius:10px;
-    font-size:18px;
-    cursor:pointer;
-    margin:10px;
-}
+            background:
+                radial-gradient(circle at top, #123d2d 0%, transparent 40%),
+                linear-gradient(135deg, #050807, #0b1210 50%, #050807);
+        }
 
-button:hover{
-    background:#008844;
-}
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
 
-</style>
+        .card {
+            padding: 30px;
+            border: 1px solid rgba(0, 255, 136, 0.15);
+            border-radius: 24px;
 
+            background: rgba(15, 23, 20, 0.92);
+            box-shadow:
+                0 25px 80px rgba(0, 0, 0, 0.55),
+                0 0 40px rgba(0, 255, 136, 0.05);
+
+            backdrop-filter: blur(15px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .icone {
+            width: 70px;
+            height: 70px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin: 0 auto 18px;
+
+            border-radius: 20px;
+
+            font-size: 32px;
+
+            background: linear-gradient(
+                135deg,
+                #00ff88,
+                #00a85a
+            );
+
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+        }
+
+        h1 {
+            margin-bottom: 8px;
+
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        .descricao {
+            color: #9aa9a1;
+            font-size: 15px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            margin: 20px auto;
+            padding: 10px 16px;
+
+            width: fit-content;
+
+            border-radius: 50px;
+
+            color: #8fffc4;
+            background: rgba(0, 255, 136, 0.08);
+            border: 1px solid rgba(0, 255, 136, 0.12);
+
+            font-size: 13px;
+        }
+
+        .status-ponto {
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+        }
+
+        .video-container {
+            position: relative;
+            overflow: hidden;
+
+            width: 100%;
+            min-height: 300px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+            background: #020403;
+        }
+
+        video {
+            display: block;
+
+            width: 100%;
+            max-height: 600px;
+
+            object-fit: contain;
+
+            border-radius: 18px;
+        }
+
+        .video-vazio {
+            position: absolute;
+
+            text-align: center;
+
+            color: #59655f;
+            pointer-events: none;
+        }
+
+        .video-vazio .icone-video {
+            font-size: 45px;
+            margin-bottom: 12px;
+            opacity: 0.7;
+        }
+
+        .video-vazio p {
+            font-size: 14px;
+        }
+
+        .controles {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+
+            margin-top: 24px;
+        }
+
+        button {
+            border: none;
+            outline: none;
+
+            padding: 15px 25px;
+
+            border-radius: 12px;
+
+            color: #001b0e;
+
+            background: linear-gradient(
+                135deg,
+                #00ff88,
+                #00c96b
+            );
+
+            font-size: 16px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                opacity 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 10px 25px rgba(0, 255, 136, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .informacoes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 12px;
+
+            margin-top: 24px;
+        }
+
+        .info {
+            padding: 16px;
+
+            border-radius: 14px;
+
+            text-align: center;
+
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .info strong {
+            display: block;
+
+            margin-bottom: 5px;
+
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .info span {
+            color: #718078;
+            font-size: 12px;
+        }
+
+        .rodape {
+            margin-top: 24px;
+
+            text-align: center;
+
+            color: #4f5c55;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 20px;
+                border-radius: 18px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .video-container {
+                min-height: 220px;
+            }
+
+            .informacoes {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .controles {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<h1>Espelhamento da Tela 2</h1>
+    <main class="container">
 
-<button id="btn">
-Compartilhar Tela
-</button>
+        <section class="card">
 
-<br><br>
+            <!-- CABEÇALHO -->
+            <header class="header">
 
-<video id="tela" autoplay playsinline muted></video>
+                <div class="icone">
+                    🖥️
+                </div>
 
+                <h1>Espelhamento de Tela 2</h1>
 
-<script type="module">
+                <p class="descricao">
+                    Compartilhe sua tela através de uma conexão WebRTC.
+                </p>
 
-import { initializeApp } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+                <div class="status">
+                    <span class="status-ponto"></span>
+                    Sistema pronto
+                </div>
 
-import {
-getDatabase,
-ref,
-set,
-push,
-onValue
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+            </header>
 
 
-const firebaseConfig = {
+            <!-- VÍDEO -->
+            <div class="video-container">
 
-databaseURL:
-"https://pemissao--concedido-ou-negado-default-rtdb.europe-west1.firebasedatabase.app"
+                <video
+                    id="tela"
+                    autoplay
+                    playsinline
+                    muted>
+                </video>
 
-};
+                <div
+                    class="video-vazio"
+                    id="videoVazio">
 
+                    <div class="icone-video">
+                        🖥️
+                    </div>
 
-const app = initializeApp(firebaseConfig);
+                    <p>
+                        Nenhuma tela compartilhada
+                    </p>
 
-const db = getDatabase(app);
+                </div>
 
+            </div>
 
-const video = document.getElementById("tela");
 
-const botao = document.getElementById("btn");
+            <!-- CONTROLES -->
+            <div class="controles">
 
+                <button
+                    id="btn"
+                    type="button">
 
-const pc = new RTCPeerConnection({
+                    🖥️ Compartilhar Tela
 
-iceServers:[
+                </button>
 
-{
-urls:"stun:stun.l.google.com:19302"
-}
+            </div>
 
-]
 
-});
+            <!-- INFORMAÇÕES -->
+            <div class="informacoes">
 
+                <div class="info">
 
-// Estado da conexão
+                    <strong>WebRTC</strong>
 
-pc.onconnectionstatechange = ()=>{
+                    <span>
+                        Conexão em tempo real
+                    </span>
 
-console.log(
-"Estado:",
-pc.connectionState
-);
+                </div>
 
-};
+                <div class="info">
 
+                    <strong>Firebase</strong>
 
-// Recebe resposta
+                    <span>
+                        Sinalização da conexão
+                    </span>
 
-onValue(
-ref(db,"espelho2/resposta"),
-async(snapshot)=>{
+                </div>
 
-if(!snapshot.exists()) return;
+                <div class="info">
 
-try{
+                    <strong>STUN</strong>
 
-if(!pc.currentRemoteDescription){
+                    <span>
+                        Conexão entre dispositivos
+                    </span>
 
-await pc.setRemoteDescription(
-snapshot.val()
-);
+                </div>
 
-console.log(
-"Resposta conectada"
-);
+            </div>
 
-}
 
-}catch(e){
+            <footer class="rodape">
+                Espelhamento de Tela 2 • WebRTC + Firebase
+            </footer>
 
-console.log(
-"Erro resposta:",
-e
-);
+        </section>
 
-}
+    </main>
 
-});
 
+    <!-- FIREBASE + WEBRTC -->
+    <script type="module">
 
-// Envia candidatos
+        /* =====================================================
+           FIREBASE
+        ===================================================== */
 
-pc.onicecandidate=(event)=>{
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-if(!event.candidate)return;
+        import {
+            getDatabase,
+            ref,
+            set,
+            push,
+            onValue
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-push(
 
-ref(db,"espelho2/candidatos"),
+        const firebaseConfig = {
 
-event.candidate.toJSON()
+            databaseURL:
+                "https://pemissao--concedido-ou-negado-default-rtdb.europe-west1.firebasedatabase.app"
 
-);
+        };
 
-console.log(
-"Candidato enviado"
-);
 
-};
+        const app = initializeApp(firebaseConfig);
 
+        const db = getDatabase(app);
 
-// Compartilhar tela
 
-botao.onclick=async()=>{
+        /* =====================================================
+           ELEMENTOS
+        ===================================================== */
 
-try{
+        const video = document.getElementById("tela");
 
-const stream =
-await navigator.mediaDevices.getDisplayMedia({
+        const botao = document.getElementById("btn");
 
-video:true,
+        const videoVazio =
+            document.getElementById("videoVazio");
 
-audio:true
 
-});
+        /* =====================================================
+           WEBRTC
+        ===================================================== */
 
+        const pc = new RTCPeerConnection({
 
-video.srcObject=stream;
+            iceServers: [
 
+                {
+                    urls:
+                        "stun:stun.l.google.com:19302"
+                }
 
-stream.getTracks().forEach(track=>{
+            ]
 
-pc.addTrack(track,stream);
+        });
 
-});
 
+        /* =====================================================
+           ESTADO DA CONEXÃO
+        ===================================================== */
 
-const oferta =
-await pc.createOffer();
+        pc.onconnectionstatechange = () => {
 
+            console.log(
+                "Estado da conexão:",
+                pc.connectionState
+            );
 
-await pc.setLocalDescription(oferta);
+        };
 
 
-await set(
+        pc.oniceconnectionstatechange = () => {
 
-ref(db,"espelho2/oferta"),
+            console.log(
+                "Estado ICE:",
+                pc.iceConnectionState
+            );
 
-{
+        };
 
-type:pc.localDescription.type,
 
-sdp:pc.localDescription.sdp
+        /* =====================================================
+           CANDIDATOS ICE
+        ===================================================== */
 
-}
+        pc.onicecandidate = (event) => {
 
-);
+            if (!event.candidate) {
+                return;
+            }
 
+            push(
 
-alert(
-"Tela compartilhada!"
-);
+                ref(
+                    db,
+                    "espelho2/candidatos"
+                ),
 
+                event.candidate.toJSON()
 
-}catch(e){
+            );
 
-alert(
-"Erro: "+e.message
-);
+            console.log(
+                "Candidato ICE enviado."
+            );
 
-}
+        };
 
-};
 
+        /* =====================================================
+           RECEBER RESPOSTA
+        ===================================================== */
 
-// Receber candidatos
+        onValue(
 
-onValue(
+            ref(
+                db,
+                "espelho2/resposta"
+            ),
 
-ref(db,"espelho2/candidatos_pc"),
+            async (snapshot) => {
 
-(snapshot)=>{
+                if (!snapshot.exists()) {
+                    return;
+                }
 
-snapshot.forEach(async(item)=>{
+                try {
 
-try{
+                    if (
+                        !pc.currentRemoteDescription
+                    ) {
 
-await pc.addIceCandidate(
-item.val()
-);
+                        await pc.setRemoteDescription(
+                            snapshot.val()
+                        );
 
-console.log(
-"Candidato recebido"
-);
+                        console.log(
+                            "Resposta conectada."
+                        );
 
-}catch(e){
+                    }
 
-console.log(
-"Erro ICE:",
-e
-);
+                } catch (erro) {
 
-}
+                    console.error(
+                        "Erro ao receber resposta:",
+                        erro
+                    );
 
-});
+                }
 
-});
+            }
 
-</script>
+        );
+
+
+        /* =====================================================
+           RECEBER CANDIDATOS DO OUTRO DISPOSITIVO
+        ===================================================== */
+
+        onValue(
+
+            ref(
+                db,
+                "espelho2/candidatos_pc"
+            ),
+
+            async (snapshot) => {
+
+                if (!snapshot.exists()) {
+                    return;
+                }
+
+                snapshot.forEach(
+                    async (item) => {
+
+                        try {
+
+                            await pc.addIceCandidate(
+                                item.val()
+                            );
+
+                            console.log(
+                                "Candidato ICE recebido."
+                            );
+
+                        } catch (erro) {
+
+                            console.error(
+                                "Erro ao adicionar ICE:",
+                                erro
+                            );
+
+                        }
+
+                    }
+                );
+
+            }
+
+        );
+
+
+        /* =====================================================
+           COMPARTILHAR TELA
+        ===================================================== */
+
+        botao.addEventListener(
+            "click",
+            async () => {
+
+                try {
+
+                    /* Desabilita o botão */
+                    botao.disabled = true;
+
+                    botao.textContent =
+                        "⏳ Iniciando...";
+
+
+                    /* Solicita a tela */
+                    const stream =
+                        await navigator.mediaDevices.getDisplayMedia({
+
+                            video: true,
+
+                            audio: true
+
+                        });
+
+
+                    /* Mostra a tela no vídeo */
+                    video.srcObject = stream;
+
+                    videoVazio.style.display =
+                        "none";
+
+
+                    /* Adiciona as faixas ao WebRTC */
+                    stream
+                        .getTracks()
+                        .forEach((track) => {
+
+                            pc.addTrack(
+                                track,
+                                stream
+                            );
+
+                        });
+
+
+                    /* Cria a oferta */
+                    const oferta =
+                        await pc.createOffer();
+
+
+                    /* Define descrição local */
+                    await pc.setLocalDescription(
+                        oferta
+                    );
+
+
+                    /* Salva oferta no Firebase */
+                    await set(
+
+                        ref(
+                            db,
+                            "espelho2/oferta"
+                        ),
+
+                        {
+
+                            type:
+                                pc.localDescription.type,
+
+                            sdp:
+                                pc.localDescription.sdp
+
+                        }
+
+                    );
+
+
+                    console.log(
+                        "Oferta enviada."
+                    );
+
+
+                    botao.textContent =
+                        "🖥️ Tela compartilhada";
+
+
+                    /* Detecta quando o usuário para */
+                    stream
+                        .getVideoTracks()[0]
+                        ?.addEventListener(
+                            "ended",
+                            () => {
+
+                                video.srcObject = null;
+
+                                videoVazio.style.display =
+                                    "block";
+
+                                botao.disabled = false;
+
+                                botao.textContent =
+                                    "🖥️ Compartilhar Tela";
+
+                                console.log(
+                                    "Compartilhamento encerrado."
+                                );
+
+                            }
+                        );
+
+
+                } catch (erro) {
+
+                    console.error(
+                        "Erro ao compartilhar tela:",
+                        erro
+                    );
+
+
+                    botao.disabled = false;
+
+                    botao.textContent =
+                        "🖥️ Compartilhar Tela";
+
+
+                    alert(
+                        "Não foi possível compartilhar a tela.\n\n" +
+                        erro.message
+                    );
+
+                }
+
+            }
+        );
+
+    </script>
 
 </body>
 </html>
